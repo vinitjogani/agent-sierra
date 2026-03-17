@@ -1,4 +1,4 @@
-# Agent Sierra
+# Sierra
 
 FastAPI service that listens for Sentry webhooks (errors created or issues escalated). When an **unhandled** exception is detected, it launches a Cursor Cloud Agent with full error context to automatically fix it.
 
@@ -12,18 +12,18 @@ cp .env.example .env
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `CURSOR_API_KEY` | Yes | API key from [Cursor Dashboard](https://cursor.com/settings) |
-| `CURSOR_MODEL` | No | Model for Cloud Agent (default: `cursor-composer-1-5`) |
-| `GITHUB_REPOSITORY` | Yes* | GitHub repo URL (e.g. `https://github.com/org/repo`) |
-| `GITHUB_REF` | No | Branch/base ref (default: `main`) |
-| `CURSOR_AUTO_CREATE_PR` | No | Auto-create PR on fix (default: `true`) |
-| `REDIS_URL` | No | Redis connection URL (default: `redis://localhost:6379/0`) |
-| `SENTRY_WEBHOOK_SECRET` | Yes | Client secret from Sentry integration (verifies webhook authenticity) |
-| `SENTRY_AUTH_TOKEN` | Yes* | Bearer token for Sentry API (for manual trigger from dashboard) |
-| `DASHBOARD_PASSWORD` | Yes | Password for dashboard access |
-| `SENTRY_PROJECT_<slug>` | No | Map Sentry project slug to repo (e.g. `SENTRY_PROJECT_backend=https://github.com/org/backend`) |
+| Variable                | Required | Description                                                                                    |
+| ----------------------- | -------- | ---------------------------------------------------------------------------------------------- |
+| `CURSOR_API_KEY`        | Yes      | API key from [Cursor Dashboard](https://cursor.com/settings)                                   |
+| `CURSOR_MODEL`          | No       | Model for Cloud Agent (default: `cursor-composer-1-5`)                                         |
+| `GITHUB_REPOSITORY`     | Yes\*    | GitHub repo URL (e.g. `https://github.com/org/repo`)                                           |
+| `GITHUB_REF`            | No       | Branch/base ref (default: `main`)                                                              |
+| `CURSOR_AUTO_CREATE_PR` | No       | Auto-create PR on fix (default: `true`)                                                        |
+| `REDIS_URL`             | No       | Redis connection URL (default: `redis://localhost:6379/0`)                                     |
+| `SENTRY_WEBHOOK_SECRET` | Yes      | Client secret from Sentry integration (verifies webhook authenticity)                          |
+| `SENTRY_AUTH_TOKEN`     | Yes\*    | Bearer token for Sentry API (for manual trigger from dashboard)                                |
+| `DASHBOARD_PASSWORD`    | Yes      | Password for dashboard access                                                                  |
+| `SENTRY_PROJECT_<slug>` | No       | Map Sentry project slug to repo (e.g. `SENTRY_PROJECT_backend=https://github.com/org/backend`) |
 
 \* Or configure per-project mapping via `SENTRY_PROJECT_<slug>`.
 
@@ -46,11 +46,13 @@ cp .env.example .env
 ## Run
 
 **Local:**
+
 ```bash
 uvicorn app.main:app --reload
 ```
 
 **Docker (app + Redis):**
+
 ```bash
 cp .env.example .env   # Add your keys
 docker compose up --build

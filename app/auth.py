@@ -14,9 +14,9 @@ SESSION_COOKIE = "agent_sierra_session"
 SESSION_MAX_AGE = 60 * 60 * 24 * 7  # 7 days
 
 
-
-
-def _verify_sentry_signature(secret: str | None, body: bytes, signature: str | None) -> bool:
+def _verify_sentry_signature(
+    secret: str | None, body: bytes, signature: str | None
+) -> bool:
     if not secret or not signature:
         return False
     expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
@@ -30,7 +30,9 @@ def verify_sentry_webhook(request: Request, body: bytes) -> None:
 
     secret = get_config().get("sentry_webhook_secret")
     if not secret:
-        raise HTTPException(status_code=503, detail="SENTRY_WEBHOOK_SECRET not configured")
+        raise HTTPException(
+            status_code=503, detail="SENTRY_WEBHOOK_SECRET not configured"
+        )
     sig = request.headers.get("Sentry-Hook-Signature", "").strip()
     if not _verify_sentry_signature(secret, body, sig):
         logger.warning("Sentry webhook signature verification failed")
@@ -59,7 +61,9 @@ def _is_browser_request(request: Request) -> bool:
 
 async def require_dashboard_auth(
     request: Request,
-    credentials: Annotated[HTTPBasicCredentials | None, Depends(HTTPBasic(auto_error=False))],
+    credentials: Annotated[
+        HTTPBasicCredentials | None, Depends(HTTPBasic(auto_error=False))
+    ],
 ) -> None:
     from app.config import get_config
 
@@ -81,7 +85,7 @@ async def require_dashboard_auth(
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid credentials",
-        headers={"WWW-Authenticate": 'Basic realm="Agent Sierra"'},
+        headers={"WWW-Authenticate": 'Basic realm="Sierra"'},
     )
 
 

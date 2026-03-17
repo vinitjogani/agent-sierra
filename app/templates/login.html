@@ -1,57 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Agent Sierra — Login</title>
+  <title>Sierra — Login</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
     body {
-      font-family: ui-monospace, "SF Mono", Monaco, monospace;
-      font-size: 14px;
-      background: #0d1117;
-      color: #c9d1d9;
+      background-color: #f9f9f9;
+      color: #333;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    form {
+
+    .login-container {
       width: 100%;
-      max-width: 320px;
+      max-width: 380px;
+      padding: 2rem;
     }
-    h1 { font-size: 1rem; color: #8b949e; margin-bottom: 1rem; font-weight: 400; }
+
+    .logo-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #111;
+      text-align: center;
+    }
+
+    form {
+      background: #ffffff;
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid #eaeaea;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
     input[type="password"] {
       width: 100%;
-      padding: 0.5rem 0.75rem;
-      background: #161b22;
-      border: 1px solid #30363d;
-      color: #c9d1d9;
-      font: inherit;
-      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      background: #fdfdfd;
+      border: 1px solid #e2e8f0;
+      color: #333;
+      font-size: 1rem;
+      border-radius: 8px;
+      transition: all 0.2s;
     }
-    input:focus { outline: none; border-color: #58a6ff; }
+
+    input:focus {
+      outline: none;
+      border-color: #a0aec0;
+      box-shadow: 0 0 0 3px rgba(160, 174, 192, 0.1);
+    }
+
     button {
-      margin-top: 1rem;
       width: 100%;
-      padding: 0.5rem;
-      background: #238636;
+      padding: 0.75rem 1rem;
+      background: #111;
       border: none;
       color: #fff;
-      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
       cursor: pointer;
-      border-radius: 4px;
+      border-radius: 8px;
+      transition: background-color 0.2s;
     }
-    button:hover { background: #2ea043; }
-    .error { color: #f85149; font-size: 0.85rem; margin-top: 0.5rem; }
+
+    button:hover {
+      background: #333;
+    }
+
+    .error {
+      color: #ef4444;
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 1.25rem;
+    }
   </style>
 </head>
+
 <body>
-  <form method="post" action="/login">
-    <h1>Agent Sierra</h1>
-    <input type="password" name="password" placeholder="Password" required autofocus>
-    <button type="submit">Login</button>
-    <div class="error">{{error}}</div>
-  </form>
+  <div class="login-container">
+    <div class="logo-header">
+      <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path
+          d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+        </path>
+      </svg>
+      <h1>Sierra</h1>
+    </div>
+
+    <form method="post" action="/login">
+      <div class="input-group">
+        <input type="password" name="password" placeholder="Password" required autofocus>
+      </div>
+      <button type="submit">Sign In</button>
+      <div class="error">{{error}}</div>
+    </form>
+  </div>
 </body>
+
 </html>

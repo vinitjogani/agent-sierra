@@ -9,7 +9,12 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
-from app.auth import RequireAuth, clear_session, set_session_cookie, verify_sentry_webhook
+from app.auth import (
+    RequireAuth,
+    clear_session,
+    set_session_cookie,
+    verify_sentry_webhook,
+)
 from app.redis_store import get_recent_runs
 from app.sentry_client import fetch_and_trigger
 from app.sentry_webhook import handle_sentry_webhook
@@ -17,7 +22,7 @@ from app.sentry_webhook import handle_sentry_webhook
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Agent Sierra", description="Sentry → Cursor Cloud Agent")
+app = FastAPI(title="Sierra", description="Sentry → Cursor Cloud Agent")
 
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 
@@ -49,7 +54,7 @@ async def login_page():
 
 
 @app.post("/login")
-async def login(request: Request, response: Response):
+async def login(request: Request):
     from app.config import get_config
 
     password = get_config().get("dashboard_password")
@@ -57,9 +62,14 @@ async def login(request: Request, response: Response):
         raise HTTPException(status_code=503, detail="DASHBOARD_PASSWORD not configured")
     form = await request.form()
     if secrets.compare_digest(form.get("password", ""), password):
-        set_session_cookie(response, password)
-        return RedirectResponse("/", status_code=302)
-    body = (TEMPLATE_DIR / "login.html").read_text().replace("{{error}}", "<p class=\"error\">Invalid password</p>")
+        redirect = RedirectResponse("/", status_code=302)
+        set_session_cookie(redirect, password)
+        return redirect
+    body = (
+        (TEMPLATE_DIR / "login.html")
+        .read_text()
+        .replace("{{error}}", '<p class="error">Invalid password</p>')
+    )
     return HTMLResponse(body, status_code=401)
 
 
@@ -72,18 +82,11 @@ async def logout(response: Response):
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(_: None = RequireAuth):
     runs = get_recent_runs()
-    if runs:
-        rows = "".join(
-            f'<tr><td>{_escape(r.get("title", ""))}</td>'
-            f'<td><a href="{_escape(r.get("sentry_url") or "#")}" target="_blank">Sentry</a></td>'
-            f'<td><a href="{_escape(r.get("cursor_url") or "#")}" target="_blank">Agent</a></td>'
-            f'<td>{_fmt_ts(r.get("created_at"))}</td></tr>'
-            for r in runs
-        )
-    else:
-        rows = '<tr><td colspan="4" class="meta">No runs yet. Triggered agents will appear here.</td></tr>'
+    runs_json = json.dumps(runs) if runs else "[]"
     body = (TEMPLATE_DIR / "dashboard.html").read_text()
-    return HTMLResponse(body.replace("{{rows}}", rows).replace("{{count}}", str(len(runs))))
+    return HTMLResponse(
+        body.replace("{{runs_json}}", runs_json).replace("{{count}}", str(len(runs)))
+    )
 
 
 @app.get("/health")
@@ -113,7 +116,10 @@ async def manual_trigger(request: Request, _: None = RequireAuth):
 async def sentry_webhook(request: Request):
     resource = request.headers.get("Sentry-Hook-Resource", "").lower()
     if resource not in ("error", "issue"):
-        return JSONResponse(status_code=400, content={"error": "Missing or invalid Sentry-Hook-Resource header"})
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Missing or invalid Sentry-Hook-Resource header"},
+        )
     body = await request.body()
     verify_sentry_webhook(request, body)
     try:
