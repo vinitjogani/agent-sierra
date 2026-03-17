@@ -26,20 +26,47 @@ def _parse_sentry_url(url: str) -> tuple[str | None, str | None, str]:
 
 
 def _normalize_frame(frame: dict[str, Any]) -> dict[str, Any]:
-    ctx = frame.get("context") or []
-    context_line = ""
-    target_ln = frame.get("lineNo") or frame.get("lineno")
-    for item in ctx:
-        if len(item) >= 2 and item[0] == target_ln:
-            context_line = str(item[1]).strip()[:200] if item[1] else ""
-            break
-    return {
+    result = {
         "filename": frame.get("filename") or frame.get("absPath", "?"),
         "abs_path": frame.get("absPath") or frame.get("filename"),
         "lineno": frame.get("lineNo") or frame.get("lineno", "?"),
         "function": frame.get("function", "?"),
-        "context_line": context_line,
     }
+    if frame.get("context_line") is not None:
+        result["context_line"] = str(frame["context_line"]).strip()
+    if frame.get("pre_context"):
+        result["pre_context"] = [str(l).rstrip() for l in frame["pre_context"]]
+    if frame.get("post_context"):
+        result["post_context"] = [str(l).rstrip() for l in frame["post_context"]]
+    if frame.get("colno") is not None:
+        result["colno"] = frame["colno"]
+    if frame.get("in_app") is not None:
+        result["in_app"] = frame["in_app"]
+    if frame.get("vars"):
+        result["vars"] = frame["vars"]
+    ctx = frame.get("context") or []
+    target_ln = result.get("lineno")
+    if ctx and "context_line" not in result and target_ln is not None:
+        sorted_ctx = sorted((c for c in ctx if len(c) >= 2), key=lambda x: (x[0] is None, x[0] or 0))
+        pre_context, context_line, post_context = [], "", []
+        for item in sorted_ctx:
+            ln, line = item[0], str(item[1]).rstrip() if len(item) >= 2 and item[1] else ""
+            if ln == target_ln:
+                context_line = line.strip()
+            elif ln is not None:
+                (pre_context if ln < target_ln else post_context).append(line)
+        result["context_line"] = context_line
+        if pre_context:
+            result["pre_context"] = pre_context
+        if post_context:
+            result["post_context"] = post_context
+    elif ctx and "context_line" not in result:
+        for item in ctx:
+            if len(item) >= 2 and item[0] == target_ln:
+                result["context_line"] = str(item[1]).strip() if item[1] else ""
+                break
+    result.setdefault("context_line", "")
+    return result
 
 
 def _event_to_webhook_payload(event: dict[str, Any], issue: dict[str, Any], sentry_url: str) -> dict[str, Any]:
