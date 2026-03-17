@@ -22,7 +22,12 @@ def _is_unhandled_error(payload: dict[str, Any]) -> bool:
 
 def _is_unhandled_issue(payload: dict[str, Any]) -> bool:
     issue = payload.get("data", {}).get("issue", {})
-    return issue.get("isUnhandled") is True or issue.get("substatus") == "escalating"
+    substatus = issue.get("substatus")
+    return (
+        issue.get("isUnhandled") is True
+        or substatus == "escalating"
+        or substatus == "regressed"
+    )
 
 
 def _resolve_repository(project_slug: str | None) -> str | None:
@@ -73,7 +78,7 @@ def _format_issue_prompt(payload: dict[str, Any]) -> str:
     issue = payload.get("data", {}).get("issue", {})
     metadata = issue.get("metadata") or {}
     lines = [
-        "Fix the following issue reported by Sentry (escalated or unhandled).",
+        "Fix the following issue reported by Sentry (escalated, regressed, or unhandled).",
         "",
         f"**Title**: {issue.get('title', 'Unknown')}",
         f"**Level**: {issue.get('level', 'error')}",
@@ -108,8 +113,10 @@ def handle_sentry_webhook(payload: dict[str, Any], resource: str) -> dict[str, A
             return {"status": "ignored", "reason": f"action '{action}' not relevant"}
         if not _is_unhandled_issue(payload):
             return {"status": "ignored", "reason": "handled issue"}
-        if action == "unresolved" and data.get("issue", {}).get("substatus") != "escalating":
-            return {"status": "ignored", "reason": "issue unresolved but not escalating"}
+        if action == "unresolved":
+            substatus = data.get("issue", {}).get("substatus")
+            if substatus not in ("escalating", "regressed"):
+                return {"status": "ignored", "reason": "issue unresolved but not escalating or regressed"}
         prompt = _format_issue_prompt(payload)
         slug = _get_slug(data.get("issue", {}).get("project"))
     else:
