@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Sierra — Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: ui-monospace, "SF Mono", Monaco, monospace;
+      font-size: 14px;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    form {
+      width: 100%;
+      max-width: 320px;
+    }
+    h1 { font-size: 1rem; color: #8b949e; margin-bottom: 1rem; font-weight: 400; }
+    input[type="password"] {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      font: inherit;
+      border-radius: 4px;
+    }
+    input:focus { outline: none; border-color: #58a6ff; }
+    button {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.5rem;
+      background: #238636;
+      border: none;
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover { background: #2ea043; }
+    .error { color: #f85149; font-size: 0.85rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <form method="post" action="/login">
+    <h1>Agent Sierra</h1>
+    <input type="password" name="password" placeholder="Password" required autofocus>
+    <button type="submit">Login</button>
+    <div class="error">{{error}}</div>
+  </form>
+</body>
+</html>

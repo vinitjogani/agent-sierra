@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Sierra</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: ui-monospace, "SF Mono", Monaco, monospace;
+      font-size: 14px;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 {
+      font-weight: 400;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: #8b949e;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #21262d;
+    }
+    th {
+      font-weight: 500;
+      color: #8b949e;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    td:first-child { max-width: 40%; }
+    a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    .meta { color: #6e7681; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>Agent Sierra — {{count}} recent run(s) <a href="/logout" style="font-size:0.75rem;margin-left:1rem;opacity:0.7">logout</a></h1>
+  <form id="trigger-form" style="margin-bottom:1.5rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+    <input type="url" name="sentry_url" placeholder="Paste Sentry error URL" required
+      style="flex:1;min-width:280px;padding:0.5rem 0.75rem;background:#161b22;border:1px solid #30363d;color:#c9d1d9;font:inherit;border-radius:4px">
+    <button type="submit" style="padding:0.5rem 1rem;background:#238636;border:none;color:#fff;font:inherit;cursor:pointer;border-radius:4px">Trigger fix</button>
+  </form>
+  <div id="trigger-result" class="meta" style="margin-bottom:1rem;min-height:1.5rem"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>Error</th>
+        <th>Sentry</th>
+        <th>Agent</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{rows}}
+    </tbody>
+  </table>
+  <script>
+    document.getElementById('trigger-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const input = e.target.sentry_url;
+      const resultEl = document.getElementById('trigger-result');
+      resultEl.textContent = 'Sending…';
+      resultEl.style.color = '';
+      try {
+        const r = await fetch('/api/trigger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sentry_url: input.value }),
+          credentials: 'include'
+        });
+        const data = await r.json();
+        if (data.status === 'triggered') {
+          resultEl.textContent = 'Agent launched: ' + (data.agent_url ? 'View' : data.agent_id);
+          if (data.agent_url) resultEl.innerHTML = 'Agent launched: <a href="' + data.agent_url + '" target="_blank">View agent</a>';
+          resultEl.style.color = '#3fb950';
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          resultEl.textContent = data.reason || 'Failed';
+          resultEl.style.color = '#f85149';
+        }
+      } catch (err) {
+        resultEl.textContent = err.message || 'Request failed';
+        resultEl.style.color = '#f85149';
+      }
+    };
+  </script>
+</body>
+</html>
